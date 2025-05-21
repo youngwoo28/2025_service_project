@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}불안핑{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
+</head>
+<body>
+
+  <!-- 오른쪽 상단 로그인/로그아웃 -->
+  <div id="authArea">
+    {% if user.is_authenticated %}
+      {{ user.username }}님
+      <a href="{% url 'logout' %}">로그아웃</a>
+      {% if user.is_superuser %}
+        | <a href="/admin/">관리자 페이지</a>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'login' %}">로그인</a>
+      <a href="{% url 'signup' %}">회원가입</a>
+    {% endif %}
+  </div>
+
+  <!-- 본문 내용 -->
+  <div class="content">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+</body>
+</html>
