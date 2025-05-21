@@ -1,0 +1,60 @@
+{% extends "chatapp/base.html" %}
+{% load static %}
+
+{% block title %}{{ date }} 감정일지{% endblock %}
+
+{% block content %}
+  <h1>{{ date }} 감정일지</h1>
+
+  <h2>요약</h2>
+  <p>{{ summary }}</p>
+
+  <h2>감정 그래프</h2>
+  <canvas id="emotionChart" width="800" height="300"></canvas>
+
+  <button onclick="window.location.href='{% url 'journal_list' %}'">목록으로 돌아가기</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const emotionMap = {
+      "분노": 0, "불안": 1, "슬픔": 2, "상처": 3,
+      "당황": 4, "중립": 5, "기쁨": 6
+    };
+    const emotionHistory = {{ emotion_history|safe }};
+
+    const labels = emotionHistory.map(e => e.timestamp);
+    const data = emotionHistory.map(e => emotionMap[e.sentiment] ?? 5);
+
+    const ctx = document.getElementById("emotionChart").getContext("2d");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "감정 변화",
+          data: data,
+          borderColor: "blue",
+          backgroundColor: "rgba(0, 0, 255, 0.1)",
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            min: 0,
+            max: 6,
+            ticks: {
+              stepSize: 1,
+              callback: value => Object.keys(emotionMap).find(key => emotionMap[key] === value)
+            },
+            title: { display: true, text: "감정" }
+          },
+          x: {
+            title: { display: true, text: "시간" }
+          }
+        }
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인</title>
+  <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
+</head>
+<body>
+  <div id="chatContainer">
+    <h2 style="text-align: center;">로그인</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">로그인</button>
+    </form>
+
+    <p style="text-align: center;">계정이 없나요? <a href="{% url 'signup' %}">회원가입</a></p>
+
+    <!-- ✅ 홈으로 가기 버튼 추가 -->
+    <div style="text-align: center; margin-top: 10px;">
+      <a href="/" style="text-decoration: underline; color: gray;">🏠 홈으로 돌아가기</a>
+    </div>
+  </div>
+</body>
+</html>
