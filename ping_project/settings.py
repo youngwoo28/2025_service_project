@@ -1,5 +1,10 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+print("✅ 현재 KOBERT_API_URL:", os.getenv("KOBERT_API_URL"))
+# settings.py
+
+LOGIN_URL = '/accounts/login/'  # 로그인 페이지 URL로 설정
 
 # ======================================
 # ✅ 기본 경로 설정
@@ -11,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ======================================
 SECRET_KEY = 'django-insecure-개인-키-변경-필요'  # 🔐 실제 배포 시 반드시 변경
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # ======================================
 # ✅ 설치된 앱들

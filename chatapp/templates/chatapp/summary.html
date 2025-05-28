@@ -1,119 +1,144 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>대화 결과</title>
+  <title>대화 결과 – 불안핑</title>
   <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* 로그인/회원가입 우측 상단 영역 */
-    #authArea {
-      position: absolute;
-      top: 20px;
-      right: 30px;
+    /* 1) 페이지 전체 세로 스크롤 켜기 */
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
     }
 
-    #authArea a {
-      margin-left: 12px;
-      text-decoration: none;
-      color: #555;
-      font-weight: bold;
+    /* 2) 메인 컨테이너 아래 여유 */
+    #mainContainer {
+      padding: 20px;
+      padding-bottom: 60px;
     }
 
-    #authArea a:hover {
-      color: #ff6666;
+    /* 3) 대화 요약 카드 스타일 */
+    #summaryContent {
+      background: #fff;
+      border: 2px solid #4a90e2;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
     }
+
+    /* 4) 차트 컨테이너 스타일 */
+    #chartContainer {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 40px;
+      height: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    /* --- 로그인/회원가입은 styles.css 에서 관리 --- */
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- ✅ 로그인/로그아웃 + 관리자 링크 -->
-  <div id="authArea">
-    {% if user.is_authenticated %}
-      {{ user.username }}님
-      <a href="{% url 'logout' %}">로그아웃</a>
-      {% if user.is_superuser %}
-        | <a href="/admin/">관리자 페이지</a>
-      {% endif %}
-    {% else %}
-      <a href="{% url 'login' %}">로그인</a>
-      <a href="{% url 'signup' %}">회원가입</a>
-    {% endif %}
+  <!-- 로그인/회원가입 (기존대로 plain link) -->
+<div id="authArea">
+  {% if user.is_authenticated %}
+    {{ user.username }}님
+    <a href="{% url 'logout' %}">로그아웃</a>
+    <a href="{% url 'journal_list' %}" style="margin-left: 10px;">감정일지</a>  <!-- 여기 추가 -->
+    {% if user.is_superuser %}| <a href="/admin/">관리자페이지</a>{% endif %}
+  {% else %}
+    <a href="{% url 'login' %}">로그인</a>
+    <a href="{% url 'signup' %}">회원가입</a>
+  {% endif %}
+</div>
+
+
+  <div id="mainContainer">
+    <h1>대화 결과</h1>
+
+    <!-- 1) 대화 요약 카드 -->
+    <div id="summaryContent">
+      <h2>대화 요약</h2>
+      <p>{{ summary }}</p>
+    </div>
+
+    <!-- 2) 육각형 레이더 차트 -->
+    <div id="chartContainer">
+      <h2>감정 변화 그래프</h2>
+      <canvas id="emotionRadarChart"></canvas>
+    </div>
+
+    <!-- 3) 다시 상담하기 버튼 -->
+    <button onclick="location.href='{% url 'index' %}'">다시 상담하기</button>
   </div>
-
-  <h1>대화 결과</h1>
-
-  <!-- 요약 결과 -->
-  <div id="summaryContent">
-    <h2>대화 요약</h2>
-    <p>{{ summary }}</p>
-  </div>
-
-  <!-- 감정 변화 그래프 -->
-  <h2>감정 변화 그래프</h2>
-  <canvas id="emotionChart" width="800" height="300"></canvas>
-
-  <button onclick="window.location.href='{% url 'index' %}'">다시 상담하기</button>
 
   <script>
-    const emotionMap = {
-      "분노": 0,
-      "불안": 1,
-      "슬픔": 2,
-      "상처": 3,
-      "당황": 4,
-      "중립": 5,
-      "기쁨": 6
-    };
+    // 6가지 핵심 감정 레이블
+    const labels = ["분노","불안","슬픔","중립","기쁨","당황"];
+    const emotionMap = { 분노:0, 불안:1, 슬픔:2, 중립:3, 기쁨:4, 당황:5 };
 
-    const emotionHistory = {{ emotion_history|safe }};
-    console.log("📊 감정 데이터:", emotionHistory);
+    // 감정 이력
+    const history = {{ emotion_history|safe }};
+    const counts = Array(6).fill(0);
+    history.forEach(e => {
+      const i = emotionMap[e.sentiment];
+      if (i != null) counts[i]++;
+    });
 
-    const labels = emotionHistory.map(e => e.timestamp);
-    const data = emotionHistory.map(e => emotionMap[e.sentiment] ?? 5); // 모르는 감정은 중립 처리
+    // 0~5 스케일 정규화
+    const maxCount = Math.max(...counts, 1);
+    const dataPoints = counts.map(c => (c / maxCount) * 5);
 
-    if (data.length === 1) {
-      labels.push(labels[0] + " ");
-      data.push(data[0]);
-    }
-
-    const ctx = document.getElementById("emotionChart").getContext("2d");
+    const ctx = document.getElementById("emotionRadarChart").getContext("2d");
     new Chart(ctx, {
-      type: "line",
+      type: "radar",
       data: {
-        labels: labels,
+        labels,
         datasets: [{
-          label: "감정 변화",
-          data: data,
-          borderColor: "blue",
-          backgroundColor: "rgba(0, 0, 255, 0.1)",
-          fill: true,
+          label: "감정 빈도",
+          data: dataPoints,
+          backgroundColor: "rgba(74,144,226,0.2)",
+          borderColor: "#4a90e2",
+          pointBackgroundColor: "#4a90e2",
+          pointBorderColor: "#fff",
+          borderWidth: 2,
           tension: 0.3
         }]
       },
       options: {
+        layout: { padding: 70 },  // 레이블 잘림 방지
         scales: {
-          y: {
-            min: 0,
-            max: 6,
+          r: {
+            angleLines:  { color: "#cfd8e3" },
+            grid:        { color: "#e6ecf7" },
+            pointLabels: { color: "#4a90e2", font: { size:14, weight:"bold" } },
             ticks: {
-              stepSize: 1,
-              callback: function(value) {
-                return Object.keys(emotionMap).find(key => emotionMap[key] === value);
-              }
-            },
-            title: {
-              display: true,
-              text: "감정"
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: "채팅 시간 (HH:MM:SS)"
+              beginAtZero: true,
+              stepSize:     1,
+              max:          10,
+              color:        "#7b8ca3",
+              backdropColor:"#f0f4f9"
             }
           }
-        }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: "#222",
+              font:  { size:14, weight:"bold" }
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   </script>

@@ -1,60 +1,128 @@
-{% extends "chatapp/base.html" %}
 {% load static %}
-
-{% block title %}{{ date }} 감정일지{% endblock %}
-
-{% block content %}
-  <h1>{{ date }} 감정일지</h1>
-
-  <h2>요약</h2>
-  <p>{{ summary }}</p>
-
-  <h2>감정 그래프</h2>
-  <canvas id="emotionChart" width="800" height="300"></canvas>
-
-  <button onclick="window.location.href='{% url 'journal_list' %}'">목록으로 돌아가기</button>
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ date }} 감정일지 – 불안핑</title>
+  <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
+  <style>
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+    }
+    #mainContainer {
+      padding: 20px;
+      padding-bottom: 60px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    #summaryContent {
+      background: #fff;
+      border: 2px solid #4a90e2;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+    #chartContainer {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 40px;
+      height: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+    /* 추가: 요약 제목 강조 */
+    #summaryContent h2 {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="authArea">
+    {% if user.is_authenticated %}
+      {{ user.username }}님
+      <a href="{% url 'logout' %}">로그아웃</a>
+      <a href="{% url 'journal_list' %}">감정일지</a>
+      {% if user.is_superuser %}| <a href="/admin/">관리자페이지</a>{% endif %}
+    {% else %}
+      <a href="{% url 'login' %}">로그인</a>
+      <a href="{% url 'signup' %}">회원가입</a>
+    {% endif %}
+  </div>
+
+  <div id="mainContainer">
+    <h1>{{ date }} 감정일지</h1>
+
+    <div id="summaryContent">
+      <h2>요약</h2>
+      <p>{{ summary }}</p>
+    </div>
+
+    <div id="chartContainer">
+      <h2>감정 그래프</h2>
+      <canvas id="emotionRadarChart"></canvas>
+    </div>
+
+    <button onclick="location.href='{% url 'journal_list' %}'">감정일지 목록으로</button>
+    <button onclick="location.href='{% url 'index' %}'">다시 상담하기</button>
+  </div>
+
   <script>
-    const emotionMap = {
-      "분노": 0, "불안": 1, "슬픔": 2, "상처": 3,
-      "당황": 4, "중립": 5, "기쁨": 6
-    };
-    const emotionHistory = {{ emotion_history|safe }};
+    const labels = ["분노","불안","슬픔","상처","당황","중립","기쁨"];
+    const emotion_frequency = {{ emotion_frequency|safe }};
+    const maxCount = Math.max(...emotion_frequency, 1);
+    const dataPoints = emotion_frequency.map(c => (c / maxCount) * 5);
 
-    const labels = emotionHistory.map(e => e.timestamp);
-    const data = emotionHistory.map(e => emotionMap[e.sentiment] ?? 5);
-
-    const ctx = document.getElementById("emotionChart").getContext("2d");
+    const ctx = document.getElementById("emotionRadarChart").getContext("2d");
     new Chart(ctx, {
-      type: "line",
+      type: "radar",
       data: {
-        labels: labels,
+        labels,
         datasets: [{
-          label: "감정 변화",
-          data: data,
-          borderColor: "blue",
-          backgroundColor: "rgba(0, 0, 255, 0.1)",
-          fill: true,
+          label: "감정 빈도",
+          data: dataPoints,
+          backgroundColor: "rgba(74,144,226,0.2)",
+          borderColor: "#4a90e2",
+          pointBackgroundColor: "#4a90e2",
+          pointBorderColor: "#fff",
+          borderWidth: 2,
           tension: 0.3
         }]
       },
       options: {
+        layout: { padding: 70 },
         scales: {
-          y: {
-            min: 0,
-            max: 6,
+          r: {
+            angleLines:  { color: "#cfd8e3" },
+            grid:        { color: "#e6ecf7" },
+            pointLabels: { color: "#4a90e2", font: { size:14, weight:"bold" } },
             ticks: {
-              stepSize: 1,
-              callback: value => Object.keys(emotionMap).find(key => emotionMap[key] === value)
-            },
-            title: { display: true, text: "감정" }
-          },
-          x: {
-            title: { display: true, text: "시간" }
+              beginAtZero: true,
+              stepSize:     1,
+              max:          10,
+              color:        "#7b8ca3",
+              backdropColor:"#f0f4f9"
+            }
           }
-        }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: "#222",
+              font:  { size:14, weight:"bold" }
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   </script>
-{% endblock %}
+</body>
+</html>

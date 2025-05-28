@@ -3,23 +3,123 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>로그인</title>
+  <title>로그인 – 불안핑</title>
   <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
+  <style>
+    /* ─ 로그인 페이지 전용 스타일 ─ */
+    .login-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: #F4F6FB;
+    }
+    .login-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 40px 32px;
+      max-width: 380px;
+      width: 100%;
+    }
+    .login-card h2 {
+      margin-bottom: 24px;
+      font-size: 1.8rem;
+      color: #2DEDA5;
+      text-align: center;
+    }
+    .login-card .form-group {
+      margin-bottom: 16px;
+    }
+    .login-card .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #333;
+    }
+    .login-card .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e0e6ef;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #222;
+      box-sizing: border-box;
+    }
+    .login-card .form-group input:focus {
+      border-color: #2DEDA5;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(45,237,165,0.2);
+    }
+    .login-card form button {
+      width: 100%;
+      padding: 12px;
+      background: #2DEDA5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s ease;
+    }
+    .login-card form button:hover {
+      background: #19b87a;
+    }
+    .login-card .helper-links {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .login-card .helper-links a {
+      color: #2DEDA5;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .login-card .helper-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* ─ 필드 에러 강조 ─ */
+    .has-error input {
+      border: 2px solid #e74c3c !important;
+      box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+    }
+    .field-error {
+      background: #fdecea;
+      color: #c0392b;
+      padding: 8px 12px;
+      margin-top: 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div id="chatContainer">
-    <h2 style="text-align: center;">로그인</h2>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">로그인</button>
-    </form>
-
-    <p style="text-align: center;">계정이 없나요? <a href="{% url 'signup' %}">회원가입</a></p>
-
-    <!-- ✅ 홈으로 가기 버튼 추가 -->
-    <div style="text-align: center; margin-top: 10px;">
-      <a href="/" style="text-decoration: underline; color: gray;">🏠 홈으로 돌아가기</a>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <h2>로그인</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-group {% if field.errors %}has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+              <div class="field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit">로그인</button>
+      </form>
+      <div class="helper-links">
+        <p>계정이 없으신가요?<a href="{% url 'signup' %}">회원가입</a></p>
+        <p><a href="{% url 'index' %}">🏠 홈으로 돌아가기</a></p>
+      </div>
     </div>
   </div>
 </body>

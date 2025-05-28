@@ -1,22 +1,215 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  {% load static %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>불안핑</title>
   <link rel="stylesheet" href="{% static 'chatapp/styles.css' %}">
+  <style>
+    /* 추가된 하단 섹션 전체 감싸는 컨테이너 */
+    #extraSection {
+      border: 2px solid #b2dfdb; /* 테두리 */
+      border-radius: 15px; /* 둥근 모서리 */
+      background-color: #f6f8fa;
+      display: flex;
+      align-items: center;
+      padding: 30px 20px;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 40px auto 80px auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      animation: fadeInMove 1.2s ease forwards; /* 나타나는 애니메이션 */
+    }
+  /* 불안핑 이미지 간단한 좌우 흔들기 애니메이션 */
+  #extraSection img {
+    width: 180px;
+    height: auto;
+    flex-shrink: 0;
+    animation: shake 2s ease-in-out infinite;
+  }
+   /* 텍스트가 서서히 나타나면서 살짝 위아래 움직임 */
+  #extraText {
+    flex-grow: 1;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #2a3a35;
+    font-weight: 500;
+    white-space: pre-wrap;
+  }
+
+    /* 페이지 기본 배경 색과 여백 설정 */
+    body {
+      background-color: #f6f8fa; /* 연한 배경 */
+      margin: 0;
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+      color: #222;
+      overflow-y: auto; /* 세로 스크롤 가능 */
+    }
+
+    /* 기존 인트로 영역을 플렉스 중앙 정렬하고 크기 유지 */
+    #chatIntro.active {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+      flex-direction: column;
+      position: relative;
+      padding: 20px;
+    }
+
+    /* 추가 정보 섹션 어두운 배경 및 밝은 글씨 */
+    #additionalInfoSection {
+      width: 100%;
+      max-width: 900px;
+      margin: 100px auto 60px;
+      padding: 20px 30px 10px 30px;
+      box-sizing: border-box;
+      font-size: 15px;
+      color: #666; /* 중간 밝기 회색 */
+      line-height: 1.7;
+      font-weight: 400;
+      background-color: #f0f2f5; /* 연한 회색 파스텔톤 */
+      border-top: 2px solid #ccc; /* 상단 가로 경계선 */
+      border-radius: 0; /* 박스 효과 제거 */
+      box-shadow: none; /* 그림자 제거 */
+    }
+
+        
+      /* 구분선 제거 */
+      .additional-divider {
+        display: none;
+      }
+
+        /* 제목 스타일 */
+      #additionalInfoSection h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #444; /* 약간 진한 회색 */
+        margin-bottom: 18px;
+        text-align: center;
+      }
+
+      /* 문단 텍스트 색상 */
+      #additionalInfoSection p {
+        margin-bottom: 12px;
+        text-align: center;
+        color: #666;
+      }
+
+      /* 반응형 유지 */
+      @media (max-width: 600px) {
+        #additionalInfoSection {
+          margin: 30px 15px 50px;
+          font-size: 14px;
+          padding: 15px 10px 10px 10px;
+        }
+        #additionalInfoSection h3 {
+          font-size: 1.1rem;
+        }
+        #additionalInfoSection p {
+          margin-bottom: 10px;
+        }
+      }
+      
+  /* 애니메이션 키프레임 */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+  }
+
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-8px); opacity: 0.8; }
+  }
+
+  @keyframes fadeInMove {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+    /* 기능 설명 섹션 */
+  #featureSection {
+    border: 2px solid #b2dfdb; /* 연한 테두리 */
+    border-radius: 15px;
+    background-color: #e0f2f1; /* 아주 연한 민트 계열 배경 */
+    display: flex;
+    align-items: center;
+    padding: 30px 20px;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto 80px auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    animation: fadeInMove 1.2s ease forwards;
+    flex-direction: row-reverse; /* 이미지 오른쪽 */
+  }
+
+  #featureSection img {
+    width: 180px;
+    height: auto;
+    flex-shrink: 0;
+    user-select: none;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+  }
+
+  #featureText {
+    flex-grow: 1;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #2a3a35;
+    font-weight: 500;
+    white-space: pre-wrap;
+  }
+
+  /* 기존 fadeInMove 애니메이션 재사용 */
+  @keyframes fadeInMove {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 반응형 */
+  @media (max-width: 600px) {
+    #featureSection {
+      flex-direction: column;
+      max-width: 90vw;
+      padding: 20px;
+      gap: 20px;
+    }
+    #featureSection img {
+      width: 140px;
+    }
+    #featureText {
+      font-size: 1rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+  }
+
+</style>
+
 </head>
 <body>
-  
-  <!-- ✅ 로그인/회원가입 or 로그아웃 + 관리자 조건 -->
+  <!-- 우측 상단 로그인/회원가입 영역 -->
   <div id="authArea">
     {% if user.is_authenticated %}
-      {{ user.username }}님
+      <span class="auth-username">{{ user.username }}님</span>
       <a href="{% url 'logout' %}">로그아웃</a>
-      <a href="{% url 'journal_list' %}">감정일지</a> <!-- ✅ 감정일지 링크 추가 -->
+      <a href="{% url 'journal_list' %}">감정일지</a>
       {% if user.is_superuser %}
-        | <a href="/admin/">관리자 페이지</a>
+        <a href="/admin/">관리자</a>
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}">로그인</a>
@@ -24,24 +217,128 @@
     {% endif %}
   </div>
 
-  <!-- 기존 header -->
-  <div id="header">
-    <img src="{% static 'chatapp/불안핑_이미지.png' %}" alt="불안핑 캐릭터" id="pingImage">
-    <h1>불안핑</h1>
-  </div>
-
-  <div id="chatWrapper">
-    <img src="{% static 'chatapp/불안핑.png' %}" alt="불안핑" id="pingCharacter">
-    <div id="chatContainer">
-      <div id="chatBox">
-        <div id="chatMessages"></div>
-        <textarea id="userMessage" class="input-field" rows="2" placeholder="여기에 입력해!"></textarea>
-        <button id="sendMessage">보내기</button>
-      </div>
+  <!-- 인트로(첫 화면) -->
+  <div id="chatIntro" class="active">
+    <div class="intro-center">
+      <div class="intro-title">오늘은 무슨 생각을 하고 있어?</div>
+      <form class="intro-input-wrap" autocomplete="off" onsubmit="return false;">
+        <input type="text" id="introInput" placeholder="무엇이든 물어보세요" autocomplete="off" />
+        <button id="introSend" type="submit">보내기</button>
+      </form>
     </div>
   </div>
 
-  <button id="endChatButton">채팅 종료</button>
+  <!-- 오른쪽 아래 불안핑 캐릭터 -->
+  <img src="{% static 'chatapp/불안핑.png' %}" alt="불안핑" id="pingCharacterIntro">
+
+  <!-- 메인 채팅 영역: 전환 후 보임 -->
+  <div id="mainArea">
+    <div id="chatWrapper">
+      <div id="chatContainer">
+        <div id="chatBox">
+          <div id="chatMessages"></div>
+          <div id="chatInputArea">
+            <textarea id="userMessage" class="input-field" rows="2" placeholder="무엇이든 입력해 보세요!"></textarea>
+            <button id="sendMessage">보내기</button>
+          </div>
+        </div>
+      </div>
+      {% if user.is_authenticated %}
+      <div id="emotionSidebar">
+        <h2>감정 기록</h2>
+        <div id="emotionHistory"></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 채팅 종료 버튼 (인트로에서는 숨김) -->
+  <button id="endChatButton" style="display:none; position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); width: 320px; max-width: 90vw; padding: 18px; border: none; background: #ff7a6e; color: white; font-size: 18px; font-weight: 600; border-radius: 10px; z-index: 1002; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: background 0.2s; cursor:pointer;">
+    채팅 종료
+  </button>
+
+  <!-- 추가한 내용: 하단 가로 경계선과 캐릭터+설명 텍스트 -->
+ <section id="extraSection">
+  <img src="{% static 'chatapp/불안핑2.png' %}" alt="불안핑 캐릭터2" />
+  <div id="extraText">
+    <strong>사용자에게 할 말</strong>
+    <br><br>
+    안녕하세요<br><br>
+    마음이 힘들 때 언제든 불안핑과 이야기를 나누어 보세요.<br><br>                                        
+    어떤 작은 고민도 괜찮습니다. 편안한 마음으로 털어놓으세요.<br><br>
+  </div>
+</section>
+
+<section id="featureSection">
+  <img src="{% static 'chatapp/불안핑3.png' %}" alt="불안핑 캐릭터3" />
+  <div id="featureText">
+    불안핑은 여러분의 감정을 이해하고 위로하는 인공지능 챗봇입니다.
+    <br><br>
+    언제든지 이야기를 나누고 싶을 때, 불안핑과 함께 편안한 대화를 나누세요.
+    <br><br>
+    불안핑은 여러분의 마음 상태를 분석해 맞춤형 감정일지 기능을 제공하며, 일상의 불안을 줄이고 긍정적인 마음가짐을 돕습니다.
+  </div>
+</section>
+
+
+  <!-- 기존 footer 유지 -->
+  <footer id="existingFooter">
+    <!-- 기존 내용 유지 -->
+  </footer>
+
+  <!-- 추가 정보 섹션 -->
+  <section id="additionalInfoSection">
+  <h3>회사 정보</h3>
+  <p>불안핑 주식회사</p>
+  <p>사업자 : ***-**-**** (대표자: 최영우)</p>
+  <p>주소 : 12345 서울 구로구 *******</p>
+  <p>전화 : 02-***-**** (업무일 오전 00:00 ~ 24:00)</p>
+  <p>이메일 : qkrdlfvy0@naver.com</p>
+  <p>통신판매업신고 : 제 ****-서울-**** 호</p>
+</section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const introInput = document.getElementById('introInput');
+      const introSend = document.getElementById('introSend');
+      const chatIntro = document.getElementById('chatIntro');
+      const mainArea = document.getElementById('mainArea');
+      let isSending = false;
+
+      mainArea.style.display = 'none';
+      document.getElementById('endChatButton').style.display = 'none';
+
+      function handleIntroSend() {
+        if (isSending) return;
+        const msg = introInput.value.trim();
+        if (msg) {
+          isSending = true;
+          chatIntro.style.display = 'none';
+          mainArea.style.display = 'block';
+          mainArea.classList.add('active');
+          document.getElementById('endChatButton').style.display = 'block';
+          setTimeout(() => { isSending = false; }, 500);
+        }
+      }
+
+      introSend.onclick = handleIntroSend;
+      introInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleIntroSend();
+        }
+      });
+
+      document.getElementById('endChatButton').onclick = () => {
+        mainArea.style.display = 'none';
+        chatIntro.style.display = 'flex';
+        chatIntro.classList.add('active');
+        document.getElementById('endChatButton').style.display = 'none';
+        document.getElementById('chatMessages').innerHTML = '';
+        document.getElementById('userMessage').value = '';
+      };
+    });
+  </script>
 
   <script src="{% static 'chatapp/script.js' %}"></script>
 </body>
